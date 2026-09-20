@@ -339,14 +339,12 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       TOOLBAR FLOTANTE — COMPORTAMIENTO iOS NOTES (COLAPSABLE)
+       TOOLBAR FLOTANTE — COMPORTAMIENTO iOS NOTES
        ───────────────────────────────────────────────────────
        • Expandido  → píldora glass con TODOS los controles
-       • Colapsado  → burbuja circular pequeña (icono 🛠️)
-       • Se mueve libremente por la cancha, SIEMPRE dentro
-         de los límites (nunca se sale ni se oculta en bordes)
-       • Botón "minimizar" (chevron) dentro de la píldora
-       • Transición: all 0.3s cubic-bezier(0.25, 1, 0.5, 1)
+       • Colapsado  → burbuja circular (icono 🛠️)
+       • Siempre dentro de los límites, nunca se sale
+       • Se adapta a pantallas de iPhone (tiers responsivos)
     ═══════════════════════════════════════════════════════ */
 
     /* Wrapper de posicionamiento — JS maneja left/top */
@@ -355,12 +353,12 @@
       z-index: 150;
       pointer-events: auto;
       touch-action: none;
-      /* Spring al soltar el drag / al recolocar */
+      --collapsed-size: 48px;
+      /* Spring al soltar / recolocar */
       transition: left 0.35s cubic-bezier(0.34, 1.18, 0.64, 1),
                   top  0.35s cubic-bezier(0.34, 1.18, 0.64, 1);
     }
 
-    /* Sin spring mientras se arrastra */
     .floating-toolbar.is-toolbar-dragging {
       transition: none;
     }
@@ -372,6 +370,7 @@
       align-items: center;
       height: 52px;
       width: auto;
+      min-width: 52px;
       border-radius: 26px;
       overflow: hidden;
       white-space: nowrap;
@@ -383,15 +382,8 @@
         0 8px 32px rgba(0, 0, 0, 0.6),
         0 2px 8px rgba(0, 0, 0, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
-      /* ⬇️ La animación de compresión pedida */
+      /* ⬇️ Transición de compresión pedida por el usuario */
       transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    /* Estado COLAPSADO → círculo */
-    .floating-toolbar.collapsed .toolbar-bubble {
-      height: 48px;
-      border-radius: 24px;
-      background: rgba(28, 28, 32, 0.78);
     }
 
     /* ── ICONO DEL ESTADO COLAPSADO (🛠️) ── */
@@ -400,8 +392,8 @@
       left: 0;
       top: 50%;
       transform: translateY(-50%);
-      width: 48px;
-      height: 48px;
+      width: var(--collapsed-size);
+      height: var(--collapsed-size);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -572,7 +564,6 @@
       background: rgba(255, 255, 255, 0.22);
     }
 
-    /* Chevron dibujado en CSS (fiable en cualquier dispositivo) */
     .toolbar-minimize .chev {
       display: block;
       width: 8px;
@@ -582,6 +573,57 @@
       border-bottom: 2px solid currentColor;
       border-radius: 1px;
       transform: rotate(45deg);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE TIERS — ADAPTACIÓN A iPHONE
+       ───────────────────────────────────────────────────────
+       • normal          → tablets / landscape / pantallas anchas
+       • .compact        → iPhone 14/15/Plus en vertical (~390-430px)
+       • .ultra-compact  → iPhone SE / mini en vertical (~360-390px)
+       El JS mide el ancho natural de la píldora y activa el tier
+       que quepa dentro del viewport.
+    ═══════════════════════════════════════════════════════ */
+
+    /* ── COMPACT ── */
+    .floating-toolbar.compact { --collapsed-size: 44px; }
+    .floating-toolbar.compact .toolbar-bubble { height: 48px; border-radius: 24px; }
+    .floating-toolbar.compact .toolbar-handle { width: 44px; height: 44px; gap: 3.5px; }
+    .floating-toolbar.compact .bar1,
+    .floating-toolbar.compact .bar3 { width: 13px; }
+    .floating-toolbar.compact .bar2 { width: 15px; }
+    .floating-toolbar.compact .toolbar-buttons { gap: 4px; padding: 0 3px; }
+    .floating-toolbar.compact .pill-button { height: 32px; padding: 0 9px; font-size: 0.72rem; gap: 3px; }
+    .floating-toolbar.compact .toolbar-divider { height: 16px; }
+    .floating-toolbar.compact .toolbar-minimize { width: 28px; height: 28px; margin: 0 8px 0 2px; }
+    .floating-toolbar.compact .toolbar-minimize .chev { width: 7px; height: 7px; margin-top: -3.5px; }
+
+    /* ── ULTRA COMPACT ── */
+    .floating-toolbar.ultra-compact { --collapsed-size: 40px; }
+    .floating-toolbar.ultra-compact .toolbar-bubble { height: 44px; border-radius: 22px; }
+    .floating-toolbar.ultra-compact .toolbar-handle { width: 40px; height: 40px; gap: 3px; }
+    .floating-toolbar.ultra-compact .bar1,
+    .floating-toolbar.ultra-compact .bar3 { width: 12px; height: 1.8px; }
+    .floating-toolbar.ultra-compact .bar2 { width: 14px; height: 1.8px; }
+    .floating-toolbar.ultra-compact .toolbar-buttons { gap: 3px; padding: 0 2px; }
+    .floating-toolbar.ultra-compact .pill-button { height: 30px; padding: 0 7px; font-size: 0.66rem; gap: 2px; }
+    .floating-toolbar.ultra-compact .toolbar-divider { height: 14px; }
+    .floating-toolbar.ultra-compact .toolbar-minimize { width: 22px; height: 22px; margin: 0 6px 0 0; }
+    .floating-toolbar.ultra-compact .toolbar-minimize .chev { width: 6px; height: 6px; margin-top: -3px; }
+
+    /* ── ESTADO COLAPSADO: círculo perfecto ── */
+    .floating-toolbar.collapsed .toolbar-bubble {
+      width: var(--collapsed-size) !important;
+      height: var(--collapsed-size);
+      border-radius: calc(var(--collapsed-size) / 2);
+      opacity: 0.92;
+    }
+
+    /* ── Sin transiciones durante mediciones internas ── */
+    .floating-toolbar.no-transition,
+    .floating-toolbar.no-transition .toolbar-bubble,
+    .floating-toolbar.no-transition .toolbar-bubble * {
+      transition: none !important;
     }
   </style>
 </head>
@@ -967,7 +1009,7 @@
       });
 
       /* ═══════════════════════════════════════════════════════
-         TOOLBAR — LÓGICA iOS NOTES (COLAPSABLE)
+         TOOLBAR — LÓGICA iOS NOTES + ADAPTACIÓN A iPHONE
          ───────────────────────────────────────────────────────
          • Expandido : píldora glass con todos los controles
          • Colapsado : burbuja circular con icono 🛠️
@@ -976,21 +1018,19 @@
          • Chevron ⌄  → colapsar
          • Tap en las 3 rayitas → colapsar
          • Tap en el círculo     → expandir
+         • Tiers responsivos: normal / compact / ultra-compact
       ═══════════════════════════════════════════════════════ */
       (function initToolbar() {
         const toolbar = document.getElementById('floatingToolbar');
         const bubble  = toolbar.querySelector('.toolbar-bubble');
-        const miniBtn = document.getElementById('toolbarMini');
         const minBtn  = document.getElementById('toolbarMinimize');
         const wrapper = document.getElementById('pitchWrapper');
 
-        const MARGIN_H       = 10;   // margen lateral mínimo
-        const MARGIN_V       = 14;   // margen vertical mínimo
-        const MOVE_THRESH    = 6;    // px para diferenciar tap de drag
-        const COLLAPSED_SIZE = 48;   // diámetro del círculo colapsado
-        const EXPANDED_H     = 52;   // alto de la píldora expandida
+        const MARGIN_H    = 12;   // margen lateral mínimo
+        const MARGIN_V    = 14;   // margen vertical mínimo
+        const MOVE_THRESH = 6;    // px para diferenciar tap de drag
 
-        let expandedW    = 0;        // ancho natural de la píldora
+        let expandedW = 0;
         let tbX = 0, tbY = 0;
         let isCollapsed  = false;
         let isDragging   = false;
@@ -1010,6 +1050,16 @@
           return { x: e.clientX, y: e.clientY };
         }
 
+        function getTierSizes() {
+          if (toolbar.classList.contains('ultra-compact')) {
+            return { expandedH: 44, collapsedSize: 40 };
+          }
+          if (toolbar.classList.contains('compact')) {
+            return { expandedH: 48, collapsedSize: 44 };
+          }
+          return { expandedH: 52, collapsedSize: 48 };
+        }
+
         function sizeNow() {
           return { w: bubble.offsetWidth, h: bubble.offsetHeight };
         }
@@ -1026,34 +1076,61 @@
           return Math.max(MARGIN_V, Math.min(max, y));
         }
 
-        /* Posición directa (durante drag, sin transición) */
         function setPosDirect(x, y) {
           toolbar.style.left = x + 'px';
           toolbar.style.top  = y + 'px';
         }
 
-        /* Posición con spring (al soltar / recolocar) */
         function setPosSpring(x, y) {
           toolbar.classList.remove('is-toolbar-dragging');
           toolbar.style.left = x + 'px';
           toolbar.style.top  = y + 'px';
         }
 
-        /* Mide el ancho natural de la píldora expandida sin animar nada */
-        function measureExpandedWidth() {
-          const prevW = bubble.style.width;
-          const prevT = bubble.style.transition;
+        /* ── Responsive tiers ──
+           Mide el ancho natural de la píldora y elige el tier
+           que quepa dentro del viewport. Siempre sin transición
+           (clase .no-transition) para que la medición no parpadee. */
+        function applyResponsiveSizing() {
+          const wrapperW = wrapper.getBoundingClientRect().width;
+          const avail    = wrapperW - 2 * MARGIN_H;
 
-          bubble.style.transition = 'none';
-          bubble.style.width      = 'auto';
-          const w = bubble.offsetWidth;
-          bubble.style.width      = prevW || 'auto';
+          const wasCollapsed = isCollapsed;
 
-          void bubble.offsetWidth;          // forzar reflow
-          bubble.style.transition = prevT;  // restaurar
+          toolbar.classList.add('no-transition');
+          if (wasCollapsed) toolbar.classList.remove('collapsed');
+
+          /* 1) Medir tier normal */
+          toolbar.classList.remove('compact', 'ultra-compact');
+          bubble.style.width = 'auto';
           void bubble.offsetWidth;
+          let w = bubble.offsetWidth;
 
-          return w;
+          /* 2) Si no cabe, probar compact */
+          if (w > avail) {
+            toolbar.classList.add('compact');
+            void bubble.offsetWidth;
+            w = bubble.offsetWidth;
+          }
+
+          /* 3) Si aún no cabe, probar ultra-compact */
+          if (w > avail) {
+            toolbar.classList.add('ultra-compact');
+            void bubble.offsetWidth;
+            w = bubble.offsetWidth;
+          }
+
+          expandedW = w;
+
+          /* Restaurar estado visual */
+          bubble.style.width = expandedW + 'px';
+          if (wasCollapsed) {
+            toolbar.classList.add('collapsed');
+          }
+          void bubble.offsetWidth;
+          toolbar.classList.remove('no-transition');
+
+          return expandedW;
         }
 
         /* ── Colapsar / Expandir ── */
@@ -1067,10 +1144,9 @@
           isCollapsed = collapse;
           toolbar.classList.toggle('collapsed', collapse);
 
-          const targetW = collapse ? COLLAPSED_SIZE : expandedW;
-          const targetH = collapse ? COLLAPSED_SIZE : EXPANDED_H;
-
-          bubble.style.width = targetW + 'px';
+          const tier = getTierSizes();
+          const targetW = collapse ? tier.collapsedSize : expandedW;
+          const targetH = collapse ? tier.collapsedSize : tier.expandedH;
 
           /* Mantener el centro y reencajar dentro de los límites */
           tbX = clampX(cx - targetW / 2, targetW);
@@ -1080,8 +1156,7 @@
 
         /* ── Posición inicial: centrado abajo ── */
         function initPosition() {
-          expandedW = measureExpandedWidth();
-          bubble.style.width = expandedW + 'px';
+          applyResponsiveSizing();
 
           const r = wrapper.getBoundingClientRect();
           const s = sizeNow();
@@ -1095,10 +1170,9 @@
           toolbar.style.transform = 'none';
         }
 
-        /* ── Reencajar (resize) ── */
+        /* ── Reencajar (resize / orientación) ── */
         function reflowPosition() {
-          expandedW = measureExpandedWidth();
-          bubble.style.width = (isCollapsed ? COLLAPSED_SIZE : expandedW) + 'px';
+          applyResponsiveSizing();
 
           const s = sizeNow();
           tbX = clampX(tbX, s.w);
@@ -1109,9 +1183,9 @@
         /* ── Tap ── */
         function onTap(target) {
           if (isCollapsed) {
-            setCollapsed(false);                       // círculo → píldora
+            setCollapsed(false);                                 // círculo → píldora
           } else if (target && target.closest('.toolbar-handle')) {
-            setCollapsed(true);                        // rayitas → círculo
+            setCollapsed(true);                                  // rayitas → círculo
           }
         }
 
@@ -1181,7 +1255,6 @@
           if (!pointerMoved) {
             onTap(downTarget);
           } else {
-            /* Reafirmar límites con spring (nunca se sale) */
             const s = sizeNow();
             tbX = clampX(tbX, s.w);
             tbY = clampY(tbY, s.h);
@@ -1199,11 +1272,15 @@
           setCollapsed(true);
         });
 
-        /* El círculo colapsado responde por onTap (tap) o drag (mover) */
-
         /* ── Init ── */
         requestAnimationFrame(() => requestAnimationFrame(initPosition));
 
+        /* Re-medir cuando las fuentes / emojis estén cargados */
+        window.addEventListener('load', () => {
+          requestAnimationFrame(reflowPosition);
+        });
+
+        /* Reflow en resize / cambio de orientación */
         let resizeRAF = null;
         window.addEventListener('resize', () => {
           if (resizeRAF) cancelAnimationFrame(resizeRAF);
